@@ -74,14 +74,16 @@ namespace SyncServer
                         
                         Console.WriteLine($"Получено сообщение от клиента {clientMessage}");
 
+                        // переводим в верхний регистр
                         string check_msg = clientMessage.ToUpper();
+
                         // проверка окончания соединения
                         if (check_msg.Contains(DISCONNECT_MSG))
                         {
                             break;
                         }
 
-                        // записываем полученное сообщение от клиента , для расширение словаря ответов.
+                        // записываем полученное сообщение от клиента , для расширение словаря ответов с проверкой на дублирование фразы.
                         foreach (var item in ARR_MSG)
                         {
                             string itemstr = item.ToUpper();
@@ -90,8 +92,7 @@ namespace SyncServer
                                 ARR_MSG.Add(clientMessage);
                                 break;
                             } 
-                        }
-                                       
+                        }                                       
 
                         // Рандом генерация ответа 
                         Random rand = new Random();         
@@ -107,9 +108,8 @@ namespace SyncServer
                         requestHandlingSocket.Send(requaredMessage);
                         
                     }
-
                    
-                    //
+                    //закрытие сокета
                     requestHandlingSocket.Shutdown(SocketShutdown.Both);
 
                     requestHandlingSocket.Close();
@@ -140,39 +140,57 @@ namespace SyncServer
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Ошибка считывания из файла");
+                MessageBox.Show($"Ошибка считывания файла {ex}");
             }
         }
 
         private static void UpdateDictionary(string file)
         {
-            using (StreamWriter sw = new StreamWriter(file, false,
-                Encoding.GetEncoding("utf-8")))
+            try
             {
-                foreach (var item in ARR_MSG)
+                using (StreamWriter sw = new StreamWriter(file, false,
+               Encoding.GetEncoding("utf-8")))
                 {
-                    sw.WriteLine();
-                    sw.Write(item);
-                }
+                    foreach (var item in ARR_MSG)
+                    {
+                        sw.WriteLine();
+                        sw.Write(item);
+                    }
 
+                }
             }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show($"Ошибка добавления в файл {ex}");
+            }
+               
         }
 
         private static void CreateDictionary(string file)
         {
             List<string> ARR_MSG2 = new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
 
-            using (StreamWriter sw = new StreamWriter(file, false,
-                Encoding.GetEncoding("utf-8")))
-            {              
-                foreach (var item in ARR_MSG2)
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(file, false,
+               Encoding.GetEncoding("utf-8")))
                 {
-                    sw.WriteLine();
-                    sw.Write(item);
-                }                
+                    foreach (var item in ARR_MSG2)
+                    {
+                        sw.WriteLine();
+                        sw.Write(item);
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show($"Ошибка создания и записи в файл {ex}");
+            }
+           
         }
 
     }
