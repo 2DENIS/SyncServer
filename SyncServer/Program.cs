@@ -126,7 +126,7 @@ namespace SyncServer
                UpdateDictionary("Dictionary.txt");
             }
         }
-
+        // метод считывания словаря  из файла
         private static void GetDictionary(string file)
         {
             try
@@ -146,6 +146,7 @@ namespace SyncServer
             }
         }
 
+        // метод обновления словаря
         private static void UpdateDictionary(string file)
         {
             try
@@ -169,6 +170,7 @@ namespace SyncServer
                
         }
 
+        // метод создания словаря
         private static void CreateDictionary(string file)
         {
             List<string> ARR_MSG2 = new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
