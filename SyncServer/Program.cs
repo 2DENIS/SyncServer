@@ -14,8 +14,15 @@ namespace SyncServer
         private static string IP_ADDRESS = "192.168.0.199";
         // длина очереди ожидающих запросов
         private static int BACKLOG_LENGHT = 10;
+        // длина буфера по приему сообщения
+        private static int BUFER_SIZE = 1024;
         // Стандартное приветсвие на клиента
-        private static string clientWelcomeMsg = "Привет клиент!";
+        private static string CLIENT_INCOM_MSG = "Привет клиент!";
+        // массив сообщений 
+        private static List<string> ARR_MSG= new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
+        // фраза для разрыва соединения
+        private static string DISCONNECT_MSG = "ДО СВИДАНИЯ";
+          
         static void Main(string[] args)
         {
             RunServer();
@@ -46,21 +53,48 @@ namespace SyncServer
                     Socket requestHandlingSocket = listenerSocket.Accept();
 
                     //Буфер для отправки двоичного представления сообщения
-                    byte[] serverMessage = Encoding.Unicode.GetBytes(clientWelcomeMsg);
-
+                    byte[] serverMessage = Encoding.Unicode.GetBytes(CLIENT_INCOM_MSG);
+                    //отправка сообщения
                     requestHandlingSocket.Send(serverMessage);
 
-                    //создаем буфер временного хранения сетевых бай - полученных из сети
-                    byte[] incomeBuffer = new byte[1024];
+                    while (true)
+                    {
+                        //создаем буфер временного хранения сетевых байт - полученных из сети
+                        byte[] incomeBuffer = new byte[BUFER_SIZE];
 
-                    int bytesReceived = requestHandlingSocket.Receive(incomeBuffer);
+                        int bytesReceived = requestHandlingSocket.Receive(incomeBuffer);
 
-                    // восстановление из байт текст сообщения
+                        // восстановление из байт текст сообщения
+                        string clientMessage = Encoding.Unicode.GetString(incomeBuffer, 0, bytesReceived);
+                        
+                        Console.WriteLine($"Получено сообщение от клиента {clientMessage}");
+                       
+                        // проверка окончания соединения
+                        if (clientMessage.ToUpper().Contains(DISCONNECT_MSG))
+                        {
+                            break;
+                        }
 
-                    string clientMessage = Encoding.Unicode.GetString(incomeBuffer, 0, bytesReceived);
+                        // записываем полученное сообщение от клиента , для расширение словаря ответов.
+                        ARR_MSG.Add(clientMessage);
 
-                    Console.WriteLine($"Получено сообщение от клиента {clientMessage}");
+                        // Рандом генерация ответа 
+                        Random rand = new Random();         
+                        
+                        int ind_msg =  rand.Next(ARR_MSG.Count);
 
+                        string answer_msg = ARR_MSG[ind_msg];
+
+                        //Буфер для отправки двоичного представления сообщения
+                        byte[] requaredMessage = Encoding.Unicode.GetBytes(answer_msg);
+
+                        //отправка сообщения клиенту
+                        requestHandlingSocket.Send(requaredMessage);
+                        
+                    }
+
+                   
+                    //
                     requestHandlingSocket.Shutdown(SocketShutdown.Both);
 
                     requestHandlingSocket.Close();
