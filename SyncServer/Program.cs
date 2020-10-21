@@ -27,7 +27,7 @@ namespace SyncServer
           
         static void Main(string[] args)
         {
-           // CreateDictionary();
+            // CreateDictionary("Dictionary.txt");
             GetDictionary("Dictionary.txt");
             RunServer();
 
@@ -82,11 +82,16 @@ namespace SyncServer
                         }
 
                         // записываем полученное сообщение от клиента , для расширение словаря ответов.
-                        if (!ARR_MSG.Contains(clientMessage))
+                        foreach (var item in ARR_MSG)
                         {
-                           
-                            ARR_MSG.Add(clientMessage);
-                        }                       
+                            string itemstr = item.ToUpper();
+                            if (!itemstr.Equals(check_msg))
+                            {
+                                ARR_MSG.Add(clientMessage);
+                                break;
+                            } 
+                        }
+                                       
 
                         // Рандом генерация ответа 
                         Random rand = new Random();         
@@ -117,7 +122,8 @@ namespace SyncServer
             }
             finally
             {
-               UpdateDictionary();
+                // обновляем коллекцию слов
+               UpdateDictionary("Dictionary.txt");
             }
         }
 
@@ -140,9 +146,9 @@ namespace SyncServer
             }
         }
 
-        private static void UpdateDictionary()
+        private static void UpdateDictionary(string file)
         {
-            using (StreamWriter sw = new StreamWriter("Dictionary.txt", false,
+            using (StreamWriter sw = new StreamWriter(file, false,
                 Encoding.GetEncoding("utf-8")))
             {
                 foreach (var item in ARR_MSG)
@@ -154,11 +160,11 @@ namespace SyncServer
             }
         }
 
-        private static void CreateDictionary()
+        private static void CreateDictionary(string file)
         {
             List<string> ARR_MSG2 = new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
 
-            using (StreamWriter sw = new StreamWriter("Dictionary.txt", false,
+            using (StreamWriter sw = new StreamWriter(file, false,
                 Encoding.GetEncoding("utf-8")))
             {              
                 foreach (var item in ARR_MSG2)
