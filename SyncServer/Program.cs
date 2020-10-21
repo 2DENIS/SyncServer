@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using System.IO;
+using System.Windows;
 
 namespace SyncServer
 {
@@ -19,13 +21,16 @@ namespace SyncServer
         // Стандартное приветсвие на клиента
         private static string CLIENT_INCOM_MSG = "Привет клиент!";
         // массив сообщений 
-        private static List<string> ARR_MSG= new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
+        private static List<string> ARR_MSG= new List<string>() /*{"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" }*/;
         // фраза для разрыва соединения
         private static string DISCONNECT_MSG = "ДО СВИДАНИЯ";
           
         static void Main(string[] args)
         {
+           // CreateDictionary();
+            GetDictionary("Dictionary.txt");
             RunServer();
+
         }
 
         private static void RunServer()
@@ -53,7 +58,7 @@ namespace SyncServer
                     Socket requestHandlingSocket = listenerSocket.Accept();
 
                     //Буфер для отправки двоичного представления сообщения
-                    byte[] serverMessage = Encoding.Unicode.GetBytes(CLIENT_INCOM_MSG);
+                    byte[] serverMessage = Encoding.UTF8.GetBytes(CLIENT_INCOM_MSG);
                     //отправка сообщения
                     requestHandlingSocket.Send(serverMessage);
 
@@ -65,18 +70,23 @@ namespace SyncServer
                         int bytesReceived = requestHandlingSocket.Receive(incomeBuffer);
 
                         // восстановление из байт текст сообщения
-                        string clientMessage = Encoding.Unicode.GetString(incomeBuffer, 0, bytesReceived);
+                        string clientMessage = Encoding.UTF8.GetString(incomeBuffer, 0, bytesReceived);
                         
                         Console.WriteLine($"Получено сообщение от клиента {clientMessage}");
-                       
+
+                        string check_msg = clientMessage.ToUpper();
                         // проверка окончания соединения
-                        if (clientMessage.ToUpper().Contains(DISCONNECT_MSG))
+                        if (check_msg.Contains(DISCONNECT_MSG))
                         {
                             break;
                         }
 
                         // записываем полученное сообщение от клиента , для расширение словаря ответов.
-                        ARR_MSG.Add(clientMessage);
+                        if (!ARR_MSG.Contains(clientMessage))
+                        {
+                           
+                            ARR_MSG.Add(clientMessage);
+                        }                       
 
                         // Рандом генерация ответа 
                         Random rand = new Random();         
@@ -86,7 +96,7 @@ namespace SyncServer
                         string answer_msg = ARR_MSG[ind_msg];
 
                         //Буфер для отправки двоичного представления сообщения
-                        byte[] requaredMessage = Encoding.Unicode.GetBytes(answer_msg);
+                        byte[] requaredMessage = Encoding.UTF8.GetBytes(answer_msg);
 
                         //отправка сообщения клиенту
                         requestHandlingSocket.Send(requaredMessage);
@@ -107,8 +117,57 @@ namespace SyncServer
             }
             finally
             {
+               UpdateDictionary();
+            }
+        }
+
+        private static void GetDictionary(string file)
+        {
+            try
+            {
+                using (StreamReader sr = new StreamReader(file))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string Read_Str = sr.ReadLine();
+                        ARR_MSG.Add(Read_Str);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка считывания из файла");
+            }
+        }
+
+        private static void UpdateDictionary()
+        {
+            using (StreamWriter sw = new StreamWriter("Dictionary.txt", false,
+                Encoding.GetEncoding("utf-8")))
+            {
+                foreach (var item in ARR_MSG)
+                {
+                    sw.WriteLine();
+                    sw.Write(item);
+                }
 
             }
         }
+
+        private static void CreateDictionary()
+        {
+            List<string> ARR_MSG2 = new List<string>() {"Так вот ты какой?!","И что тебе еще нужно?","А какже, согласен!" };
+
+            using (StreamWriter sw = new StreamWriter("Dictionary.txt", false,
+                Encoding.GetEncoding("utf-8")))
+            {              
+                foreach (var item in ARR_MSG2)
+                {
+                    sw.WriteLine();
+                    sw.Write(item);
+                }                
+            }
+        }
+
     }
 }
