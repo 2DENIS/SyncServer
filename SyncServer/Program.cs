@@ -43,7 +43,6 @@ namespace SyncServer
             Socket listenerSocket = new Socket(serverIP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             listenerSocket.Bind(serverEndPoint);
-
            
 
             try
@@ -111,8 +110,7 @@ namespace SyncServer
                    
                     //закрытие сокета
                     requestHandlingSocket.Shutdown(SocketShutdown.Both);
-
-                    requestHandlingSocket.Close();
+                    requestHandlingSocket.Close();                    
                 }
             }
             catch (Exception e)
